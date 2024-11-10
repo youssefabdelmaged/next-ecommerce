@@ -14,7 +14,7 @@ const config: Config = {
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
       colors: {
-        cartNumber: "#f34c7a",
+        pinkypinky: "#f34c7a",
       },
       boxShadow: {
         navlist: "0 3px 10px rgb(0,0,0,0.2)",
