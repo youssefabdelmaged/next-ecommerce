@@ -3,7 +3,9 @@ import React from "react";
 import Menu from "./Menu";
 import Image from "next/image";
 import SearchBar from "./SearchBar";
-import NavBarIcons from "./NavBarIcons";
+import dynamic from "next/dynamic";
+
+const NavBarIcons = dynamic(() => import("./NavBarIcons"), { ssr: false });
 
 const Navbar = () => {
   return (

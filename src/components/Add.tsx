@@ -1,18 +1,31 @@
 "use client";
+import { useCart } from "@/hooks/useCart";
+import useWixClient from "@/hooks/useWixClient";
 import React, { useState } from "react";
 
-const Add = () => {
+const Add = ({
+  productId,
+  variantId,
+  stockNumber,
+}: {
+  productId: string | undefined;
+  variantId: string;
+  stockNumber: number;
+}) => {
   const [quantity, setQuantity] = useState(1);
-  // temp
-  const stock = 4;
+
   const handleQuantity = (type: "i" | "d") => {
     if (type === "d" && quantity > 1) {
       setQuantity((prev) => prev - 1);
     }
-    if (type === "i" && quantity < stock) {
+    if (type === "i" && quantity < stockNumber) {
       setQuantity((prev) => prev + 1);
     }
   };
+
+  const wixClient = useWixClient();
+
+  const { addItem, isLoading } = useCart();
 
   return (
     <div className="flex flex-col gap-4">
@@ -34,13 +47,21 @@ const Add = () => {
               +
             </button>
           </div>
-          <div className="text-xs ">
-            Only <span className="text-orange-500">4 items</span> left! <br />{" "}
-            {"Don't"}
-            {""} miss it
-          </div>
+          {stockNumber < 1 ? (
+            <div className="text-xs ">Product is Out of Stock</div>
+          ) : (
+            <div className="text-xs ">
+              Only <span className="text-orange-500">{stockNumber} items</span>{" "}
+              left! <br /> {"Don't"}
+              {""} miss it
+            </div>
+          )}
         </div>
-        <button className="w-36 rounded-3xl ring-1 ring-pinkypinky text-pinkypinky py-2 px-4 hover:bg-pinkypinky hover:text-white  disabled:cursor-not-allowed disabled:bg-pink-200 disabled:text-white disabled:ring-white     ">
+        <button
+          onClick={() => addItem(wixClient, productId, variantId, quantity)}
+          className="w-36 rounded-3xl ring-1 ring-pinkypinky text-pinkypinky py-2 px-4 hover:bg-pinkypinky hover:text-white  disabled:cursor-not-allowed disabled:bg-pink-200 disabled:text-white disabled:ring-white   disabled:ring-0   "
+          disabled={isLoading}
+        > 
           Add to Cart
         </button>
       </div>

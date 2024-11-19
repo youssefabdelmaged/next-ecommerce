@@ -1,131 +1,110 @@
+import { wixClientServer } from "@/lib/wixClientServer";
+import { products } from "@wix/stores";
 import Image from "next/image";
 import Link from "next/link";
+import DOMPurify from "isomorphic-dompurify";
+import Pagination from "./Pagination";
+// import Pagination from "./Pagination";
 
-const ProductList = () => {
+const PRODUCT_PER_PAGE = 8;
+
+const ProductList = async ({
+  categoryId,
+  limit,
+  searchParams,
+}: {
+  categoryId: string | undefined;
+  limit?: number;
+  searchParams?: any;
+}) => {
+  const wixClient = await wixClientServer();
+
+  const productQuery = wixClient.products
+    .queryProducts()
+    .startsWith("name", searchParams?.name || "")
+    .eq("collectionIds", categoryId)
+    .hasSome(
+      "productType",
+      searchParams?.type ? [searchParams.type] : ["physical", "digital"]
+    )
+    .gt("priceData.price", searchParams?.min || 0)
+    .lt("priceData.price", searchParams?.max || 999999)
+    .limit(limit || PRODUCT_PER_PAGE)
+    .skip(
+      searchParams?.page
+        ? parseInt(searchParams.page) * (limit || PRODUCT_PER_PAGE)
+        : 0
+    );
+  // .find();
+
+  let res = await productQuery.find();
+
+  if (searchParams?.sort) {
+    const [sortType, sortBy] = searchParams.sort.split(" ");
+
+    if (sortType === "asc") {
+      res = await productQuery.ascending(sortBy).find();
+    }
+    if (sortType === "desc") {
+      res = await productQuery.ascending(sortBy).find();
+    }
+  }
+
   return (
-
-      <div className="mt-12 flex gap-x-8 gap-y-16  gap-16 flex-wrap  ">
+    <div className="mt-12 flex gap-x-8 gap-y-16 justify-between flex-wrap">
+      {res?.items.map((product: products.Product) => (
         <Link
-          href="/test"
-          className="w-full sm:w-[45%] lg:w-[23%] flex flex-col gap-4"
+          href={"/" + product.slug}
+          className="w-full flex flex-col gap-4 sm:w-[45%] lg:w-[22%]"
+          key={product._id}
         >
           <div className="relative w-full h-80">
             <Image
-              src="https://images.pexels.com/photos/1214212/pexels-photo-1214212.jpeg?auto=compress&cs=tinysrgb&w=800"
+              src={product.media?.mainMedia?.image?.url || "/product.png"}
               alt=""
               fill
               sizes="25vw"
-              className="absolute object-cover rounded-md z-10 hover:opacity-0 transition-opacity easy duration-500 "
+              className="absolute object-cover rounded-md z-10 hover:opacity-0 transition-opacity easy duration-500"
             />
-            <Image
-              src="https://media.istockphoto.com/id/1338927733/photo/light-fabric-bag-isolated-on-a-white-background-with-a-clipping-path.jpg?s=612x612&w=0&k=20&c=ANUiDJAuxWsblXKn-TN8cBBvSCcXaQsK2l_sauxf06s="
-              alt=""
-              fill
-              sizes="25vw"
-              className="absolute object-cover rounded-md "
-            />
+            {product.media?.items && (
+              <Image
+                src={product.media?.items[1]?.image?.url || "/product.png"}
+                alt=""
+                fill
+                sizes="25vw"
+                className="absolute object-cover rounded-md"
+              />
+            )}
           </div>
           <div className="flex justify-between">
-            <span className="font-medium">Product Name</span>
-            <span className="font-semibold">$49</span>
+            <span className="font-medium">{product.name}</span>
+            <span className="font-semibold">${product.price?.price}</span>
           </div>
-          <div className="text-sm text-gray-500 ">My Description</div>
-          <button className="rounded-2xl ring-1 ring-pinkypinky text-pinkypinky py-2 px-4 text-xs hover:bg-pinkypinky hover:text-white w-max ">
+          {product.additionalInfoSections && (
+            <div
+              className="text-sm text-gray-500"
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(
+                  product.additionalInfoSections.find(
+                    (section: any) => section.title === "shortDesc"
+                  )?.description || ""
+                ),
+              }}
+            ></div>
+          )}
+          <button className="rounded-2xl ring-1 ring-pinkypinky text-pinkypinky w-max py-2 px-4 text-xs hover:bg-pinkypinky hover:text-white">
             Add to Cart
           </button>
         </Link>
-
-        <Link
-          href="/test"
-          className="w-full sm:w-[45%] lg:w-[23%] flex flex-col gap-4"
-        >
-          <div className="relative w-full h-80">
-            <Image
-              src="https://images.pexels.com/photos/1214212/pexels-photo-1214212.jpeg?auto=compress&cs=tinysrgb&w=800"
-              alt=""
-              fill
-              sizes="25vw"
-              className="absolute object-cover rounded-md z-10 hover:opacity-0 transition-opacity easy duration-500 "
-            />
-            <Image
-              src="https://media.istockphoto.com/id/1338927733/photo/light-fabric-bag-isolated-on-a-white-background-with-a-clipping-path.jpg?s=612x612&w=0&k=20&c=ANUiDJAuxWsblXKn-TN8cBBvSCcXaQsK2l_sauxf06s="
-              alt=""
-              fill
-              sizes="25vw"
-              className="absolute object-cover rounded-md "
-            />
-          </div>
-          <div className="flex justify-between">
-            <span className="font-medium">Product Name</span>
-            <span className="font-semibold">$49</span>
-          </div>
-          <div className="text-sm text-gray-500 ">My Description</div>
-          <button className="rounded-2xl ring-1 ring-pinkypinky text-pinkypinky py-2 px-4 text-xs hover:bg-pinkypinky hover:text-white w-max ">
-            Add to Cart
-          </button>
-        </Link>
-
-        <Link
-          href="/test"
-          className="w-full sm:w-[45%] lg:w-[23%] flex flex-col gap-4"
-        >
-          <div className="relative w-full h-80">
-            <Image
-              src="https://images.pexels.com/photos/1214212/pexels-photo-1214212.jpeg?auto=compress&cs=tinysrgb&w=800"
-              alt=""
-              fill
-              sizes="25vw"
-              className="absolute object-cover rounded-md z-10 hover:opacity-0 transition-opacity easy duration-500 "
-            />
-            <Image
-              src="https://media.istockphoto.com/id/1338927733/photo/light-fabric-bag-isolated-on-a-white-background-with-a-clipping-path.jpg?s=612x612&w=0&k=20&c=ANUiDJAuxWsblXKn-TN8cBBvSCcXaQsK2l_sauxf06s="
-              alt=""
-              fill
-              sizes="25vw"
-              className="absolute object-cover rounded-md "
-            />
-          </div>
-          <div className="flex justify-between">
-            <span className="font-medium">Product Name</span>
-            <span className="font-semibold">$49</span>
-          </div>
-          <div className="text-sm text-gray-500 ">My Description</div>
-          <button className="rounded-2xl ring-1 ring-pinkypinky text-pinkypinky py-2 px-4 text-xs hover:bg-pinkypinky hover:text-white w-max ">
-            Add to Cart
-          </button>
-        </Link>
-
-        <Link
-          href="/test"
-          className="w-full sm:w-[45%] lg:w-[23%] flex flex-col gap-4"
-        >
-          <div className="relative w-full h-80">
-            <Image
-              src="https://images.pexels.com/photos/1214212/pexels-photo-1214212.jpeg?auto=compress&cs=tinysrgb&w=800"
-              alt=""
-              fill
-              sizes="25vw"
-              className="absolute object-cover rounded-md z-10 hover:opacity-0 transition-opacity easy duration-500 "
-            />
-            <Image
-              src="https://media.istockphoto.com/id/1338927733/photo/light-fabric-bag-isolated-on-a-white-background-with-a-clipping-path.jpg?s=612x612&w=0&k=20&c=ANUiDJAuxWsblXKn-TN8cBBvSCcXaQsK2l_sauxf06s="
-              alt=""
-              fill
-              sizes="25vw"
-              className="absolute object-cover rounded-md "
-            />
-          </div>
-          <div className="flex justify-between">
-            <span className="font-medium">Product Name</span>
-            <span className="font-semibold">$49</span>
-          </div>
-          <div className="text-sm text-gray-500 ">My Description</div>
-          <button className="rounded-2xl ring-1 ring-pinkypinky text-pinkypinky py-2 px-4 text-xs hover:bg-pinkypinky hover:text-white w-max ">
-            Add to Cart
-          </button>
-        </Link>
-      </div>
- 
+      ))}
+      {searchParams?.cat || searchParams?.name ? (
+        <Pagination
+          currentPage={res.currentPage || 0}
+          hasPrev={res.hasPrev()}
+          hasNext={res.hasNext()}
+        />
+      ) : null}
+    </div>
   );
 };
 
