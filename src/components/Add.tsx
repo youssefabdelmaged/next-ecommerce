@@ -62,6 +62,7 @@ const Add = ({
           className="w-36 rounded-3xl ring-1 ring-pinkypinky text-pinkypinky py-2 px-4 hover:bg-pinkypinky hover:text-white  disabled:cursor-not-allowed disabled:bg-pink-200 disabled:text-white disabled:ring-white   disabled:ring-0   "
           disabled={isLoading}
         > 
+        {/* every thing added */}
           Add to Cart
         </button>
       </div>
