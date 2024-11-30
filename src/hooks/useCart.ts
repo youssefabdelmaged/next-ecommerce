@@ -3,7 +3,7 @@ import { currentCart } from "@wix/ecom";
 import { create } from "zustand";
 
 type CartState = {
-  cart: currentCart.Cart;
+  cart: currentCart.Cart | any;
   isLoading: boolean;
   counter: number;
   getCart: (wixClient: WixClient) => void;

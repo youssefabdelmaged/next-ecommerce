@@ -12,6 +12,7 @@ const CartModel = () => {
 
   const wixClient = useWixClient();
   const { cart, isLoading, removeItem } = useCart();
+  console.log(cart);
 
   const handleCheckout = async () => {
     try {
@@ -103,7 +104,7 @@ const CartModel = () => {
           <div className="">
             <div className="flex items-center justify-between font-semibold">
               <span>Subtotal</span>
-              <span>EGP {cart.subtotal.amount}</span>
+              {cart.subtotal && <span>EGP {cart.subtotal.amount}</span>}
             </div>
             <p className="text-gray-500 text-sm mt-2 mb-4 ">
               Shipping and taxes calculated at checkout
